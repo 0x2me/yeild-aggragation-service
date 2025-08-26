@@ -73,8 +73,8 @@ A step-by-step checklist to build the app, set up environments, and deploy to Ra
 - [x] Migrations: `prisma migrate dev`
 
 ### Add minimal modules
-- [ ] Risk scoring function per brief with liquidity adjustment and buckets for asset classes
-- [ ] Matching function that filters by risk tolerance, liquidity vs horizon, and allocation cap
+- [x] Risk scoring function per brief with liquidity adjustment and buckets for asset classes
+- [x] Matching function that filters by risk tolerance, liquidity vs horizon, and allocation cap
 
 ### Add refresh pipeline (no worker)
 - [ ] Concurrency limit, per-provider timeout, basic retry
@@ -116,10 +116,10 @@ Map to the brief and to our refresh flow.
 ### Public Endpoints
 
 #### GET /health
-- [ ] Returns `{ ok: true, lastRefreshAt }`
+- [x] Returns `{ ok: true, lastRefreshAt }`
 
 #### GET /api/earn/opportunities
-- [ ] Returns all normalized opportunities from DB
+- [x] Returns all normalized opportunities from DB
 
 #### POST /api/earn/opportunities/match
 - [ ] Accepts:

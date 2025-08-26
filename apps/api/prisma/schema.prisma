@@ -13,10 +13,10 @@ model YieldOpportunity {
   provider   String
   asset      String
   chain      String
-  apr        Float
+  apr        Int      // APR in basis points (100 = 1%)
   category   String
-  liquidity  Float
-  riskScore  Float    @map("risk_score")
+  liquidity  String
+  riskScore  Int      @map("risk_score")
   updatedAt  DateTime @updatedAt @map("updated_at")
   createdAt  DateTime @default(now()) @map("created_at")
 

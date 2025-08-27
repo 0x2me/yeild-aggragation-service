@@ -1,38 +1,27 @@
-# Use Node.js base image
-FROM node:18-alpine AS builder
+# Simple Dockerfile for Railway - Backend only
+FROM node:18-alpine
 
-# Install pnpm
-RUN npm install -g pnpm@8.15.0
-
-# Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json ./apps/api/
-COPY apps/web/package.json ./apps/web/
+COPY apps/api/package.json ./
+COPY apps/api/tsconfig.json ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies using npm
+RUN npm install
 
 # Copy source code
-COPY . .
+COPY apps/api/src ./src
+COPY apps/api/prisma ./prisma
 
-# Build both apps
-RUN pnpm run build
+# Build the app
+RUN npm run build
 
-# Production stage for API
-FROM node:18-alpine AS production
-
-RUN npm install -g pnpm@8.15.0
-
-WORKDIR /app
-
-# Copy built application
-COPY --from=builder /app ./
+# Generate Prisma client
+RUN npx prisma generate
 
 # Expose port
 EXPOSE 3001
 
-# Start the API
-CMD ["pnpm", "run", "start:api"]
+# Start the server
+CMD ["node", "dist/server.js"]

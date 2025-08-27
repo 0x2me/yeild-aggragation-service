@@ -45,12 +45,14 @@ A step-by-step checklist to build the app, set up environments, and deploy to Ra
 **Goal**: Fast API that serves from DB, no live fan-out on reads. One refresh endpoint writes fresh data.
 
 ### Init apps/api with TypeScript and Fastify
+
 - [x] tsconfig, eslint, basic server bootstrap
-- [ ] CORS allow your web origin
+- [x] CORS allow your web origin
 
 ### Add Prisma in apps/api
+
 - [x] `schema.prisma` with:
-  - [ ] `YieldOpportunity` table:
+  - [x] `YieldOpportunity` table:
     - id
     - name
     - provider
@@ -61,31 +63,37 @@ A step-by-step checklist to build the app, set up environments, and deploy to Ra
     - liquidity
     - risk_score
     - updated_at
-  - [ ] `ProviderRefreshLog` table:
+  - [x] `ProviderRefreshLog` table:
     - provider
     - status
     - rows
     - message
+    - message
     - fetched_at
 
 ### Configure database
+
 - [x] Local: file `.env` in `apps/api` with `DATABASE_URL=postgres://...`
 - [x] Migrations: `prisma migrate dev`
 
 ### Add minimal modules
+
 - [x] Risk scoring function per brief with liquidity adjustment and buckets for asset classes
 - [x] Matching function that filters by risk tolerance, liquidity vs horizon, and allocation cap
 
 ### Add refresh pipeline (no worker)
+
 - [ ] Concurrency limit, per-provider timeout, basic retry
 - [ ] On success: upsert opportunities and write a log row
 - [ ] On failure: keep last good rows
 
 ### Add simple config via env
-- [ ] `REFRESH_KEY` for `/api/refresh` header check
-- [ ] `CORS_ORIGIN` for the web app
+
+- [x] `REFRESH_KEY` for `/api/refresh` header check
+- [x] `CORS_ORIGIN` for the web app
 
 ### Validation
+
 - [ ] Use Zod or Fastify schemas for request bodies and responses
 
 ## 4) Provider Adapters
@@ -93,10 +101,12 @@ A step-by-step checklist to build the app, set up environments, and deploy to Ra
 **Goal**: Add providers by dropping in a module and registering it.
 
 ### Create an adapter interface
-- [ ] In `packages/shared` or inside `apps/api`:
+
+- [ ] inside `apps/api`:
   - name, `fetch()` returns normalized opportunities
 
 ### Implement the three for the test
+
 - [ ] **Lido** (EVM staking)
 - [ ] **Marinade** (Solana staking)
 - [ ] **DeFiLlama** (multi protocol yields)
@@ -104,6 +114,7 @@ A step-by-step checklist to build the app, set up environments, and deploy to Ra
 ### Registry array controls which adapters run
 
 ### Normalization rules
+
 - [ ] Convert APR/APY to decimal APR format
 - [ ] Map chain to `ethereum` or `solana`
 - [ ] Derive category and liquidity
@@ -116,22 +127,26 @@ Map to the brief and to our refresh flow.
 ### Public Endpoints
 
 #### GET /health
+
 - [x] Returns `{ ok: true, lastRefreshAt }`
 
 #### GET /api/earn/opportunities
+
 - [x] Returns all normalized opportunities from DB
 
 #### POST /api/earn/opportunities/match
-- [ ] Accepts:
+
+- [x] Accepts:
   - wallet balances
   - riskTolerance
   - maxAllocationPct
   - investmentHorizon
-- [ ] Returns matchedOpportunities per brief rules
+- [x] Returns matchedOpportunities per brief rules
 
 ### Internal Maintenance
 
 #### POST /api/refresh
+
 - [ ] Protected by `X-Refresh-Key` header
 - [ ] Triggers the adapter pipeline and DB upserts
 - [ ] Used by Railway scheduled job
@@ -139,10 +154,12 @@ Map to the brief and to our refresh flow.
 ## 6) Frontend: Next.js
 
 ### Init apps/web with Next.js and TypeScript
+
 - [ ] Config env
   - `.env.local` with `NEXT_PUBLIC_API_URL=https://<api-domain>`
 
 ### Pages
+
 - [ ] **All Opportunities page**
   - Calls `/api/earn/opportunities`
   - Renders a table
@@ -156,12 +173,14 @@ Map to the brief and to our refresh flow.
   - Renders results
 
 ### Network strategy
+
 - [ ] Browser calls API directly for reads
 - [ ] Optional: Add a small server route to proxy if needed
 
 ## 7) Local Environment and DX
 
 ### Create .env in apps/api
+
 ```env
 DATABASE_URL=postgres://...
 REFRESH_KEY=<random-long-string>
@@ -169,17 +188,20 @@ CORS_ORIGIN=http://localhost:3000
 ```
 
 ### Create .env.local in apps/web
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
 ### Dev commands
-- [ ] Run Postgres locally or use Railway DB URL
+
+- [x] Run Postgres locally or use Railway DB URL
 - [ ] `pnpm --filter api dev` to start Fastify
 - [ ] `pnpm --filter web dev` to start Next
 
 ### Seed flow (optional)
-- [ ] Add a small script to insert 1 or 2 mock opportunities for first render
+
+- [x] Add a small script to insert 1 or 2 mock opportunities for first render
 
 ### Lint and format rules shared in root
 
@@ -188,9 +210,11 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 Two services inside one Railway project.
 
 ### Create project on Railway
+
 - [ ] Add PostgreSQL in the project
 
 ### Add api service
+
 - [ ] Root directory: `apps/api`
 - [ ] Env vars:
   - `DATABASE_URL` (from Railway DB)
@@ -201,6 +225,7 @@ Two services inside one Railway project.
 - [ ] Run Prisma migrate on first deploy
 
 ### Add web service
+
 - [ ] Root directory: `apps/web`
 - [ ] Env vars:
   - `NEXT_PUBLIC_API_URL=https://<api-service-domain>`
@@ -208,17 +233,20 @@ Two services inside one Railway project.
 - [ ] Expose port 3000
 
 ### Domains
+
 - [ ] Assign domains to api and web services
 - [ ] If calling api directly from browser, confirm CORS allows the web origin
 
 ## 9) Wire the Scheduled Refresh
 
 ### In Railway project, add a Scheduled Job that calls:
+
 - [ ] `POST https://<api-domain>/api/refresh`
 - [ ] Header `X-Refresh-Key: <REFRESH_KEY>`
 - [ ] Cadence: every 5 to 10 minutes, or hourly
 
 ### Verification
+
 - [ ] Verify logs show providers OK and any failures logged
 - [ ] Confirm DB updates and lastRefreshAt changes on `/health`
 
@@ -233,15 +261,19 @@ Two services inside one Railway project.
 ## 11) Nice to have and Bonus
 
 ### Frontend polish
+
 - [ ] Stale badge if updatedAt is older than N minutes
 - [ ] Filters by chain, provider, category
 
 ### Metrics
+
 - [ ] Log refresh duration, rows per provider, failures
 
 ### Circuit breaker
+
 - [ ] Back off a provider after repeated failures
 
 ### Bonus per brief
+
 - [ ] Wallet connect UI
 - [ ] Live integration button for one provider (stake, deposit)

@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 // Import routes
 import { opportunitiesRoutes } from './routes/opportunities';
 import { healthRoutes } from './routes/health';
+import { refreshRoutes } from './routes/refresh';
 
 // Extend Fastify instance with Prisma
 declare module 'fastify' {
@@ -65,8 +66,8 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
 
   // Simple manual bearer auth check
   app.addHook('onRequest', async (request, reply) => {
-    // Skip auth for health endpoints
-    if (request.url.startsWith('/health')) {
+    // Skip auth for health endpoints and refresh endpoint (uses different auth)
+    if (request.url.startsWith('/health') || request.url.startsWith('/api/refresh')) {
       return;
     }
     
@@ -91,6 +92,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
 
   // Register protected routes 
   await app.register(opportunitiesRoutes, { prefix: '/api/earn' });
+  await app.register(refreshRoutes, { prefix: '/api' });
 
   // Global error handler
   app.setErrorHandler((error, _request, reply) => {

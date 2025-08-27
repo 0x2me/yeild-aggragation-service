@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Coins, Filter } from "lucide-react";
+import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 
 interface HeaderProps {
   currentView: 'all' | 'profile' | 'matched';
@@ -27,7 +28,8 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
             </div>
           </div>
 
-          <nav className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <nav className="flex items-center gap-2">
             <Button
               variant={currentView === 'all' ? 'default' : 'ghost'}
               size="sm"
@@ -64,7 +66,10 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
                 )}
               </Button>
             )}
-          </nav>
+            </nav>
+            
+            <DynamicWidget />
+          </div>
         </div>
       </div>
     </header>

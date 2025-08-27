@@ -64,20 +64,27 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   // Register health routes (no auth needed)
   await app.register(healthRoutes);
 
-  // Simple manual bearer auth check
+  // Auth check - only for admin endpoints
   app.addHook('onRequest', async (request, reply) => {
-    // Skip auth for health endpoints and refresh endpoint (uses different auth)
-    if (request.url.startsWith('/health') || request.url.startsWith('/api/refresh')) {
+    // Public endpoints - no auth needed:
+    // - All health endpoints
+    // - All GET requests (viewing public data)
+    // - POST to match endpoint (just filtering public data)
+    // - Refresh endpoint (has its own X-Refresh-Key auth)
+    if (request.url.startsWith('/health') || 
+        request.url.startsWith('/api/refresh') ||
+        request.method === 'GET' ||
+        (request.method === 'POST' && request.url === '/api/earn/opportunities/match')) {
       return;
     }
     
-    // Check bearer token for all other routes
+    // For any future admin endpoints, require bearer token
     const authHeader = request.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return reply.code(401).send({ 
         error: 'Unauthorized', 
-        message: 'Bearer token required. Use Authorization: Bearer <token>' 
+        message: 'Bearer token required for admin endpoints' 
       });
     }
     

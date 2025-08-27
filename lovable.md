@@ -5,12 +5,14 @@
 - Production: `https://your-api-domain.com`
 
 ## Authentication
-All endpoints except `/health` require Bearer token authentication:
-```
-Authorization: Bearer <your-api-key>
-```
+**Public Endpoints (No auth required):**
+- `GET /health` - Health check
+- `GET /api/earn/opportunities` - List all opportunities
+- `GET /api/earn/opportunities/:id` - Get single opportunity
+- `POST /api/earn/opportunities/match` - Match opportunities to user profile
 
-For local development, use: `dev-api-key-change-in-production`
+**Protected Admin Endpoints:**
+- `POST /api/refresh` - Requires `X-Refresh-Key` header (for backend refresh jobs only)
 
 ## Available Endpoints
 
@@ -50,8 +52,8 @@ Query Parameters (all optional):
 Example Request:
 ```
 GET /api/earn/opportunities?chain=ethereum&category=staking&sortBy=apr&order=desc
-Authorization: Bearer dev-api-key-change-in-production
 ```
+**No authorization required**
 
 Response:
 ```json

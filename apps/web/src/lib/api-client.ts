@@ -1,7 +1,8 @@
 import { YieldOpportunity, OpportunitiesResponse, UserProfile, MatchResponse, OpportunityFilters } from '@/types/api';
 
-const API_URL = 'http://localhost:3001';
-const API_KEY = 'dev-api-key-change-in-production';
+// Use relative URLs when proxied through Vite
+const API_URL = ''; // Empty string means use same origin (proxied)
+const USE_MOCK_DATA = false; // Set to false to use real API
 
 // Cyber punk themed mock data
 const MOCK_OPPORTUNITIES: YieldOpportunity[] = [
@@ -87,11 +88,9 @@ const MOCK_OPPORTUNITIES: YieldOpportunity[] = [
 
 class ApiClient {
   private baseUrl: string;
-  private apiKey: string;
 
-  constructor(baseUrl: string = API_URL, apiKey: string = API_KEY) {
+  constructor(baseUrl: string = API_URL) {
     this.baseUrl = baseUrl;
-    this.apiKey = apiKey;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -100,7 +99,7 @@ class ApiClient {
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        // No auth header needed for public endpoints
         'Content-Type': 'application/json',
         ...options.headers,
       },
@@ -119,30 +118,45 @@ class ApiClient {
   }
 
   async getOpportunities(filters?: OpportunityFilters): Promise<OpportunitiesResponse> {
-    // Return mock data with cyber punk theme
-    let filteredOpportunities = [...MOCK_OPPORTUNITIES];
-    
+    // Use mock data if enabled
+    if (USE_MOCK_DATA) {
+      let filteredOpportunities = [...MOCK_OPPORTUNITIES];
+      
+      if (filters) {
+        if (filters.chain) {
+          filteredOpportunities = filteredOpportunities.filter(op => op.chain === filters.chain);
+        }
+        if (filters.category) {
+          filteredOpportunities = filteredOpportunities.filter(op => op.category === filters.category);
+        }
+        if (filters.sortBy === 'apr') {
+          filteredOpportunities.sort((a, b) => 
+            filters.order === 'asc' ? a.apr - b.apr : b.apr - a.apr
+          );
+        }
+      }
+      
+      return {
+        opportunities: filteredOpportunities,
+        total: filteredOpportunities.length,
+        limit: filters?.limit || 50,
+        offset: filters?.offset || 0,
+        filters: filters || {}
+      };
+    }
+
+    // Use real API
+    const params = new URLSearchParams();
     if (filters) {
-      if (filters.chain) {
-        filteredOpportunities = filteredOpportunities.filter(op => op.chain === filters.chain);
-      }
-      if (filters.category) {
-        filteredOpportunities = filteredOpportunities.filter(op => op.category === filters.category);
-      }
-      if (filters.sortBy === 'apr') {
-        filteredOpportunities.sort((a, b) => 
-          filters.order === 'asc' ? a.apr - b.apr : b.apr - a.apr
-        );
-      }
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
     }
     
-    return {
-      opportunities: filteredOpportunities,
-      total: filteredOpportunities.length,
-      limit: filters?.limit || 50,
-      offset: filters?.offset || 0,
-      filters: filters || {}
-    };
+    const endpoint = `/api/earn/opportunities${params.toString() ? '?' + params.toString() : ''}`;
+    return this.request<OpportunitiesResponse>(endpoint);
   }
 
   async getOpportunity(id: string): Promise<YieldOpportunity> {
@@ -150,20 +164,28 @@ class ApiClient {
   }
 
   async matchOpportunities(profile: UserProfile): Promise<MatchResponse> {
-    // Mock matching logic
-    const matchedOpportunities = MOCK_OPPORTUNITIES.filter(op => 
-      op.riskScore <= profile.riskTolerance
-    );
-    
-    return {
-      matchedOpportunities,
-      totalMatched: matchedOpportunities.length,
-      filters: {
-        riskTolerance: profile.riskTolerance,
-        investmentHorizon: profile.investmentHorizon,
-        maxAllocationPct: profile.maxAllocationPct
-      }
-    };
+    // Use mock data if enabled
+    if (USE_MOCK_DATA) {
+      const matchedOpportunities = MOCK_OPPORTUNITIES.filter(op => 
+        op.riskScore <= profile.riskTolerance
+      );
+      
+      return {
+        matchedOpportunities,
+        totalMatched: matchedOpportunities.length,
+        filters: {
+          riskTolerance: profile.riskTolerance,
+          investmentHorizon: profile.investmentHorizon,
+          maxAllocationPct: profile.maxAllocationPct
+        }
+      };
+    }
+
+    // Use real API
+    return this.request<MatchResponse>('/api/earn/opportunities/match', {
+      method: 'POST',
+      body: JSON.stringify(profile)
+    });
   }
 }
 

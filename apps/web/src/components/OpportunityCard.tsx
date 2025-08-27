@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { YieldOpportunity } from "@/types/api";
 import { formatApr, getRiskColor, getChainInfo } from "@/lib/api-client";
-import { TrendingUp, Shield, Clock, Coins } from "lucide-react";
+import { TrendingUp, Shield, Clock, Coins, Wallet } from "lucide-react";
+import { DepositModal } from "./DepositModal";
+import { useAccount } from "wagmi";
 
 interface OpportunityCardProps {
   opportunity: YieldOpportunity;
@@ -12,8 +15,13 @@ interface OpportunityCardProps {
 }
 
 export function OpportunityCard({ opportunity, onSelect, showActions = false }: OpportunityCardProps) {
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const { isConnected } = useAccount();
   const chainInfo = getChainInfo(opportunity.chain);
   const riskColorClass = getRiskColor(opportunity.riskScore);
+  
+  // Only show deposit for Aave USDC opportunities
+  const canDeposit = opportunity.provider === 'aave' && opportunity.asset === 'USDC';
 
   return (
     <Card className="bg-gradient-to-br from-card via-card to-muted/20 border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-card">
@@ -83,16 +91,28 @@ export function OpportunityCard({ opportunity, onSelect, showActions = false }: 
           </div>
         </div>
 
-        {showActions && (
+        {(showActions || canDeposit) && (
           <div className="pt-2 border-t border-border/50">
-            <Button 
-              variant="glow" 
-              size="sm" 
-              className="w-full"
-              onClick={() => onSelect?.(opportunity)}
-            >
-              Select Opportunity
-            </Button>
+            {canDeposit && isConnected ? (
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setIsDepositModalOpen(true)}
+              >
+                <Wallet className="mr-2 h-4 w-4" />
+                Deposit USDC
+              </Button>
+            ) : showActions ? (
+              <Button 
+                variant="glow" 
+                size="sm" 
+                className="w-full"
+                onClick={() => onSelect?.(opportunity)}
+              >
+                Select Opportunity
+              </Button>
+            ) : null}
           </div>
         )}
         
@@ -100,6 +120,15 @@ export function OpportunityCard({ opportunity, onSelect, showActions = false }: 
           Updated {new Date(opportunity.updatedAt).toLocaleDateString()}
         </div>
       </CardContent>
+      
+      {canDeposit && (
+        <DepositModal
+          isOpen={isDepositModalOpen}
+          onClose={() => setIsDepositModalOpen(false)}
+          opportunityName={opportunity.name}
+          apr={opportunity.apr}
+        />
+      )}
     </Card>
   );
 }

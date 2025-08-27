@@ -1,7 +1,7 @@
 import { YieldOpportunity, OpportunitiesResponse, UserProfile, MatchResponse, OpportunityFilters } from '@/types/api';
 
-// Use relative URLs when proxied through Vite
-const API_URL = ''; // Empty string means use same origin (proxied)
+// Use production API or fallback to local proxy
+const API_URL = import.meta.env.VITE_API_URL || ''; // Empty string means use same origin (proxied)
 const USE_MOCK_DATA = false; // Set to false to use real API
 
 // Cyber punk themed mock data

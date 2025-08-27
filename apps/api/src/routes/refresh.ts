@@ -16,7 +16,7 @@ export const refreshRoutes: FastifyPluginAsync = async (fastify) => {
     const refreshKey = process.env.REFRESH_KEY;
     
     // Check for refresh key in header
-    const authHeader = request.headers['x-refresh-key'];
+    const authHeader = request.headers[" import.meta.env.VITE_API_URL"];
     if (!refreshKey || authHeader !== refreshKey) {
       return reply.code(401).send({
         error: 'Unauthorized',

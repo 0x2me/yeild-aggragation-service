@@ -1,7 +1,7 @@
 import { YieldOpportunity, OpportunitiesResponse, UserProfile, MatchResponse, OpportunityFilters } from '@/types/api';
 
 // Use production API or fallback to local proxy
-const API_URL = import.meta.env.VITE_API_URL || ''; // Empty string means use same origin (proxied)
+const API_URL = import.meta.env.VITE_API_URL || 'https://back-production-2919.up.railway.app';
 const USE_MOCK_DATA = false; // Set to false to use real API
 
 // Cyber punk themed mock data

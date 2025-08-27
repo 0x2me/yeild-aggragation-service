@@ -13,8 +13,8 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
   return (
     <header className="border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="bg-gradient-to-br from-primary to-accent p-2 rounded-lg">
                 <TrendingUp className="h-6 w-6 text-white" />
@@ -25,6 +25,9 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
                 </h1>
                 <p className="text-sm text-muted-foreground">Discover the best yields</p>
               </div>
+            </div>
+            <div className="sm:hidden">
+              <DynamicWidget />
             </div>
           </div>
 
@@ -37,7 +40,7 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
               className="flex items-center gap-2"
             >
               <Coins className="h-4 w-4" />
-              All Opportunities
+              <span className="hidden sm:inline">All Opportunities</span>
             </Button>
             
             <Button
@@ -47,7 +50,7 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
               className="flex items-center gap-2"
             >
               <Filter className="h-4 w-4" />
-              My Profile
+              <span className="hidden sm:inline">My Profile</span>
             </Button>
             
             {matchedCount !== undefined && (
@@ -58,7 +61,7 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
                 className="flex items-center gap-2"
               >
                 <TrendingUp className="h-4 w-4" />
-                My Opportunities
+                <span className="hidden sm:inline">My Opportunities</span>
                 {matchedCount > 0 && (
                   <Badge variant="secondary" className="ml-1">
                     {matchedCount}
@@ -68,7 +71,9 @@ export function Header({ currentView, onViewChange, matchedCount }: HeaderProps)
             )}
             </nav>
             
-            <DynamicWidget />
+            <div className="hidden sm:block">
+              <DynamicWidget />
+            </div>
           </div>
         </div>
       </div>

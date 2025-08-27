@@ -4,6 +4,7 @@ import { LidoAdapter } from '../providers/adapters/lido';
 import { MarinadeAdapter } from '../providers/adapters/marinade';
 import { DeFiLlamaAdapter } from '../providers/adapters/defillama';
 import { Prisma } from '@prisma/client';
+import { calculateRiskScore } from '../modules/risk-scorer';
 
 // Register all adapters
 ProviderRegistry.register(new LidoAdapter());
@@ -16,7 +17,7 @@ export const refreshRoutes: FastifyPluginAsync = async (fastify) => {
     const refreshKey = process.env.REFRESH_KEY;
     
     // Check for refresh key in header
-    const authHeader = request.headers[" import.meta.env.VITE_API_URL"];
+    const authHeader = request.headers['x-refresh-key'];
     if (!refreshKey || authHeader !== refreshKey) {
       return reply.code(401).send({
         error: 'Unauthorized',
@@ -51,6 +52,15 @@ export const refreshRoutes: FastifyPluginAsync = async (fastify) => {
         // Upsert opportunities to database
         let upsertCount = 0;
         for (const opportunity of opportunities) {
+          // Calculate risk score based on our risk scoring algorithm
+          const calculatedRiskScore = calculateRiskScore({
+            name: opportunity.name,
+            asset: opportunity.asset,
+            liquidity: opportunity.liquidity
+          });
+          
+          console.log(`Risk score for ${opportunity.asset} (${opportunity.provider}): ${calculatedRiskScore}`);
+          
           await fastify.prisma.yieldOpportunity.upsert({
             where: {
               provider_asset_chain: {
@@ -64,9 +74,12 @@ export const refreshRoutes: FastifyPluginAsync = async (fastify) => {
               apr: opportunity.apr,
               category: opportunity.category,
               liquidity: opportunity.liquidity,
-              riskScore: opportunity.riskScore,
+              riskScore: calculatedRiskScore,
             },
-            create: opportunity
+            create: {
+              ...opportunity,
+              riskScore: calculatedRiskScore,
+            }
           });
           upsertCount++;
         }
